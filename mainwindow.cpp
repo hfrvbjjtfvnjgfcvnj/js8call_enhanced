@@ -13321,6 +13321,13 @@ void MainWindow::networkMessage(Message const &message)
         return;
     }
 
+    if (type == "MODE.ENABLE_AUTO"){
+	bool enable = ("1" == message.value());
+        ui->actionModeAutoreply->setChecked(enable);
+        ui->hbMacroButton->setChecked(enable);
+	std::cerr << "AUTO RESPONSE " << (enable?"ENABLED":"DISABLED") << std::endl;
+    }
+
     // INBOX.GET_MESSAGES
     // INBOX.STORE_MESSAGE
     if(type == "INBOX.GET_MESSAGES"){
