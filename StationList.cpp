@@ -33,6 +33,7 @@ QDebug operator << (QDebug debug, StationList::Station const& station)
                    << station.frequency_ << ", "
                    << station.switch_at_ << ", "
                    << station.switch_until_ << ", "
+		   << station.enable_autotx_ << ", "
                    << station.description_ << ')';
   return debug;
 }
@@ -44,6 +45,7 @@ QDataStream& operator << (QDataStream& os, StationList::Station const& station)
             << station.frequency_
             << station.switch_at_
             << station.switch_until_
+	    << station.enable_autotx_
             << station.description_;
 }
 
@@ -53,6 +55,7 @@ QDataStream& operator >> (QDataStream& is, StationList::Station& station)
             >> station.frequency_
             >> station.switch_at_
             >> station.switch_until_
+	    >> station.enable_autotx_
             >> station.description_;
 }
 
@@ -98,7 +101,7 @@ public:
     return matches.isEmpty () ? QModelIndex {} : matches.first ();
   }
 
-  static int constexpr num_columns {5};
+  static int constexpr num_columns {6};
   static auto constexpr mime_type = "application/wsjt.antenna-descriptions";
 
   Bands const * bands_;
@@ -362,12 +365,33 @@ QVariant StationList::impl::data (QModelIndex const& index, int role) const
           case Qt::EditRole:
           case Qt::DisplayRole:
           case Qt::AccessibleTextRole:
-            item = stations_.at (row).switch_until_.time().toString("hh:mm");
+	    item = stations_.at (row).switch_until_.time().toString("hh:mm");
             break;
 
           case Qt::ToolTipRole:
           case Qt::AccessibleDescriptionRole:
             item = tr ("Switch until this time");
+            break;
+
+          case Qt::TextAlignmentRole:
+            item = (int)Qt::AlignHCenter | Qt::AlignVCenter;
+            break;
+          }
+        break;
+
+      case enable_autotx_column:
+        switch (role)
+          {
+          case SortRole:
+          case Qt::EditRole:
+          case Qt::DisplayRole:
+          case Qt::AccessibleTextRole:
+            item = stations_.at (row).enable_autotx_;
+            break;
+
+          case Qt::ToolTipRole:
+          case Qt::AccessibleDescriptionRole:
+            item = tr ("Is Autoreply Enabled?");
             break;
 
           case Qt::TextAlignmentRole:
@@ -414,6 +438,7 @@ QVariant StationList::impl::headerData (int section, Qt::Orientation orientation
         case frequency_column: header = tr ("Freq. (MHz)"); break;
         case switch_at_column: header = tr ("Switch at (UTC)"); break;
         case switch_until_column: header = tr ("Until (UTC)"); break;
+        case enable_autotx_column: header = tr ("Enable Auto TX"); break;
         case description_column: header = tr ("Description"); break;
         }
     }
@@ -519,6 +544,28 @@ bool StationList::impl::setData (QModelIndex const& model_index, QVariant const&
 
           auto switch_at_index = model_index.model()->index(row, switch_at_column, model_index);
           Q_EMIT dataChanged (switch_at_index, switch_at_index, roles);
+
+          changed = true;
+          break;
+        }
+        case enable_autotx_column:
+        {
+          //QString s = value.toString();
+	  bool enable_autotx = value.toBool();
+          //if(s.length() < 5){
+          //    s = QString("0").repeated(5-s.length()) + s;
+          //}
+          //auto t = QTime::fromString(s);
+          //auto until = QDateTime(QDate(2000,1,1), t, Qt::UTC);
+          //auto at = stations_[row].switch_at_;
+          //stations_[row].switch_at_ = at;
+          //stations_[row].switch_until_ = until;
+	  stations_[row].enable_autotx_ = enable_autotx;
+
+          Q_EMIT dataChanged (model_index, model_index, roles);
+
+          auto enable_autotx_index = model_index.model()->index(row, enable_autotx_column, model_index);
+          Q_EMIT dataChanged (enable_autotx_index, enable_autotx_index, roles);
 
           changed = true;
           break;
@@ -633,7 +680,7 @@ bool StationList::impl::dropMimeData (QMimeData const * data, Qt::DropAction act
                                                  , [&band] (Station const& s) {return s.band_name_ == band;}))
             {
               // not found so add it
-              add (Station {band, 0, DriftingDateTime::currentDateTimeUtc(), DriftingDateTime::currentDateTimeUtc(), QString {}});
+              add (Station {band, 0, DriftingDateTime::currentDateTimeUtc(), DriftingDateTime::currentDateTimeUtc(), true, QString {}});
             }
         }
       return true;

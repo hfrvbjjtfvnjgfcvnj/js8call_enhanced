@@ -281,6 +281,7 @@ public:
     form_layout->addRow (tr ("&Frequency (MHz):"), &freq_);
     form_layout->addRow (tr ("&Switch at (UTC):"), &switch_at_);
     form_layout->addRow (tr ("&Until (UTC):"), &switch_until_);
+    form_layout->addRow (tr ("&Enable AutoTX"), &enable_autotx_);
     form_layout->addRow (tr ("&Description:"), &description_);
 
     auto main_layout = new QVBoxLayout (this);
@@ -305,6 +306,7 @@ public:
         freq_.frequency(),
         a,
         b,
+	enable_autotx_.checkState() == Qt::Checked,
         description_.text ()};
   }
 
@@ -322,6 +324,7 @@ private:
   FrequencyLineEdit freq_;
   QTimeEdit switch_at_;
   QTimeEdit switch_until_;
+  QCheckBox enable_autotx_;
   QLineEdit description_;
 };
 
@@ -1468,6 +1471,7 @@ Configuration::impl::impl (Configuration * self, QDir const& temp_directory,
   ui_->stations_table_view->resizeColumnToContents (StationList::frequency_column);
   ui_->stations_table_view->resizeColumnToContents (StationList::switch_at_column);
   ui_->stations_table_view->resizeColumnToContents (StationList::switch_until_column);
+  ui_->stations_table_view->resizeColumnToContents (StationList::enable_autotx_column);
   ui_->stations_table_view->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
   // actions
@@ -3573,6 +3577,7 @@ void Configuration::impl::delete_stations ()
   ui_->stations_table_view->resizeColumnToContents (StationList::frequency_column);
   ui_->stations_table_view->resizeColumnToContents (StationList::switch_at_column);
   ui_->stations_table_view->resizeColumnToContents (StationList::switch_until_column);
+  ui_->stations_table_view->resizeColumnToContents (StationList::enable_autotx_column);
 }
 
 void Configuration::impl::insert_station ()
@@ -3593,6 +3598,7 @@ void Configuration::impl::insert_station ()
       ui_->stations_table_view->resizeColumnToContents (StationList::frequency_column);
       ui_->stations_table_view->resizeColumnToContents (StationList::switch_at_column);
       ui_->stations_table_view->resizeColumnToContents (StationList::switch_until_column);
+      ui_->stations_table_view->resizeColumnToContents (StationList::enable_autotx_column);
     }
 }
 

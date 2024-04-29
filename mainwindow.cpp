@@ -2140,34 +2140,43 @@ void MainWindow::tryBandHop(){
 
       bool freqIsDifferent = (station.frequency_ != dialFreq);
 
+      bool autotxIsDifferent = (station.enable_autotx_ != ui->actionModeAutoreply->isChecked());
+
       bool canSwitch = (
         inTimeRange     &&
         noOverride      &&
-        freqIsDifferent
+        (freqIsDifferent || autotxIsDifferent) 
       );
 
       // switch, if we can and the band is different than our current band
       if(canSwitch){
           Frequency frequency = station.frequency_;
-
+	  bool enable_autotx = station.enable_autotx_;
+          std::cerr << "ATTEMPTING TO SET AUTOTX: " << enable_autotx << std::endl;
           m_bandHopped = false;
           m_bandHoppedFreq = frequency;
 
-          SelfDestructMessageBox * m = new SelfDestructMessageBox(30,
-            "Scheduled Frequency Change",
-            QString("A scheduled frequency change has arrived. The rig frequency will be changed to %1 MHz in %2 second(s).").arg(Radio::frequency_MHz_string(station.frequency_)),
-            QMessageBox::Information,
-            QMessageBox::Ok | QMessageBox::Cancel,
-            QMessageBox::Ok,
-            true,
-            this);
+	  if (freqIsDifferent)
+	  {
+              SelfDestructMessageBox * m = new SelfDestructMessageBox(30,
+                "Scheduled Frequency Change",
+                QString("A scheduled frequency change has arrived. The rig frequency will be changed to %1 MHz in %2 second(s).").arg(Radio::frequency_MHz_string(station.frequency_)),
+                QMessageBox::Information,
+                QMessageBox::Ok | QMessageBox::Cancel,
+                QMessageBox::Ok,
+                true,
+                this);
 
-          connect(m, &SelfDestructMessageBox::accepted, this, [this, frequency](){
-              m_bandHopped = true;
-              setRig(frequency);
-          });
-
-          m->show();
+              connect(m, &SelfDestructMessageBox::accepted, this, [this, frequency](){
+                  m_bandHopped = true;
+                  setRig(frequency);
+              });
+              m->show();
+	  }
+	  
+	  ui->actionModeAutoreply->setChecked(enable_autotx);
+	  ui->hbMacroButton->setChecked(enable_autotx);
+	  
 
 #if 0
           // TODO: jsherer - this is totally a hack because of the signal that gets emitted to clearActivity on band change...

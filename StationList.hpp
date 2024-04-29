@@ -56,12 +56,13 @@ public:
     Frequency frequency_;
     QDateTime switch_at_;
     QDateTime switch_until_;
+    bool enable_autotx_;
     QString description_;
   };
 
   using Stations = QList<Station>;
 
-  enum Column {band_column, frequency_column, switch_at_column, switch_until_column, description_column};
+  enum Column {band_column, frequency_column, switch_at_column, switch_until_column, enable_autotx_column, description_column};
 
   explicit StationList (Bands const * bands, QObject * parent = nullptr);
   explicit StationList (Bands const * bands, Stations, QObject * parent = nullptr);
@@ -94,7 +95,8 @@ bool operator == (StationList::Station const& lhs, StationList::Station const& r
     lhs.description_ == rhs.description_ &&
     lhs.frequency_ == rhs.frequency_ &&
     lhs.switch_at_ == rhs.switch_at_ &&
-    lhs.switch_until_ == rhs.switch_until_;
+    lhs.switch_until_ == rhs.switch_until_ && 
+    lhs.enable_autotx_ == rhs.enable_autotx_;
 }
 
 QDataStream& operator << (QDataStream&, StationList::Station const&);
