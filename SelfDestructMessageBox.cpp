@@ -19,6 +19,8 @@ SelfDestructMessageBox::SelfDestructMessageBox(
 
     connect(&m_timer, &QTimer::timeout, this, &SelfDestructMessageBox::tick);
     m_timer.setInterval(1000);
+
+    connect(this->defaultButton(), &QPushButton::clicked, this, &SelfDestructMessageBox::accept);
 }
 
 void SelfDestructMessageBox::showEvent(QShowEvent* event)
