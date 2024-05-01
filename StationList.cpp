@@ -33,6 +33,7 @@ QDebug operator << (QDebug debug, StationList::Station const& station)
                    << station.frequency_ << ", "
                    << station.switch_at_ << ", "
                    << station.switch_until_ << ", "
+		   << station.day_of_week_ << ", "
 		   << station.enable_autotx_ << ", "
                    << station.description_ << ')';
   return debug;
@@ -45,6 +46,7 @@ QDataStream& operator << (QDataStream& os, StationList::Station const& station)
             << station.frequency_
             << station.switch_at_
             << station.switch_until_
+	    << station.day_of_week_
 	    << station.enable_autotx_
             << station.description_;
 }
@@ -55,6 +57,7 @@ QDataStream& operator >> (QDataStream& is, StationList::Station& station)
             >> station.frequency_
             >> station.switch_at_
             >> station.switch_until_
+	    >> station.day_of_week_
 	    >> station.enable_autotx_
             >> station.description_;
 }
@@ -101,7 +104,7 @@ public:
     return matches.isEmpty () ? QModelIndex {} : matches.first ();
   }
 
-  static int constexpr num_columns {6};
+  static int constexpr num_columns {7};
   static auto constexpr mime_type = "application/wsjt.antenna-descriptions";
 
   Bands const * bands_;
@@ -379,6 +382,27 @@ QVariant StationList::impl::data (QModelIndex const& index, int role) const
           }
         break;
 
+      case day_of_week_column:
+        switch (role)
+          {
+          case SortRole:
+          case Qt::EditRole:
+          case Qt::DisplayRole:
+          case Qt::AccessibleTextRole:
+            item = stations_.at (row).day_of_week_;
+            break;
+
+          case Qt::ToolTipRole:
+          case Qt::AccessibleDescriptionRole:
+            item = tr ("Day of Week (Local Time) To Switch");
+            break;
+
+          case Qt::TextAlignmentRole:
+            item = (int)Qt::AlignHCenter | Qt::AlignVCenter;
+            break;
+          }
+        break;
+
       case enable_autotx_column:
         switch (role)
           {
@@ -438,6 +462,7 @@ QVariant StationList::impl::headerData (int section, Qt::Orientation orientation
         case frequency_column: header = tr ("Freq. (MHz)"); break;
         case switch_at_column: header = tr ("Switch at (UTC)"); break;
         case switch_until_column: header = tr ("Until (UTC)"); break;
+        case day_of_week_column: header = tr ("Day of Week (Local Time)"); break;
         case enable_autotx_column: header = tr ("Enable Auto TX"); break;
         case description_column: header = tr ("Description"); break;
         }
@@ -544,6 +569,19 @@ bool StationList::impl::setData (QModelIndex const& model_index, QVariant const&
 
           auto switch_at_index = model_index.model()->index(row, switch_at_column, model_index);
           Q_EMIT dataChanged (switch_at_index, switch_at_index, roles);
+
+          changed = true;
+          break;
+        }
+        case day_of_week_column:
+        {
+          QString s = value.toString();
+	  stations_[row].day_of_week_ = s;
+
+          Q_EMIT dataChanged (model_index, model_index, roles);
+
+          auto day_of_week_index = model_index.model()->index(row, day_of_week_column, model_index);
+          Q_EMIT dataChanged (day_of_week_index, day_of_week_index, roles);
 
           changed = true;
           break;
@@ -680,7 +718,8 @@ bool StationList::impl::dropMimeData (QMimeData const * data, Qt::DropAction act
                                                  , [&band] (Station const& s) {return s.band_name_ == band;}))
             {
               // not found so add it
-              add (Station {band, 0, DriftingDateTime::currentDateTimeUtc(), DriftingDateTime::currentDateTimeUtc(), true, QString {}});
+	      QString everyday("Daily");
+              add (Station {band, 0, DriftingDateTime::currentDateTimeUtc(), DriftingDateTime::currentDateTimeUtc(),everyday, true, QString {}});
             }
         }
       return true;

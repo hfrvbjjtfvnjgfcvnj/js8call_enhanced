@@ -32,6 +32,7 @@
 #include <QUdpSocket>
 #include <QVariant>
 #include <QPixmap>
+#include <QDate>
 
 #include "revision_utils.hpp"
 #include "qt_helpers.hpp"
@@ -2140,10 +2141,15 @@ void MainWindow::tryBandHop(){
 
       bool freqIsDifferent = (station.frequency_ != dialFreq);
 
+      QDate today = QDate::currentDate();
+      QString datestr = QDate::longDayName(today.dayOfWeek());
+      bool correctDayOfWeek = ((station.day_of_week_ == "Daily") || (datestr == station.day_of_week_));
+
       bool autotxIsDifferent = (station.enable_autotx_ != ui->actionModeAutoreply->isChecked());
 
       bool canSwitch = (
         inTimeRange     &&
+	correctDayOfWeek &&
         noOverride      &&
         (freqIsDifferent || autotxIsDifferent) 
       );
