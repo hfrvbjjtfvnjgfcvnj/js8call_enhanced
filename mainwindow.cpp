@@ -32,6 +32,7 @@
 #include <QUdpSocket>
 #include <QVariant>
 #include <QPixmap>
+#include <QDate>
 
 #include "revision_utils.hpp"
 #include "qt_helpers.hpp"
@@ -2140,16 +2141,23 @@ void MainWindow::tryBandHop(){
 
       bool freqIsDifferent = (station.frequency_ != dialFreq);
 
+      QDate today = QDate::currentDate();
+      QString datestr = QDate::longDayName(today.dayOfWeek());
+      bool correctDayOfWeek = ((station.day_of_week_ == "Daily") || (datestr == station.day_of_week_));
+
+      bool autotxIsDifferent = (station.enable_autotx_ != ui->actionModeAutoreply->isChecked());
+
       bool canSwitch = (
         inTimeRange     &&
+	correctDayOfWeek &&
         noOverride      &&
-        freqIsDifferent
+        (freqIsDifferent || autotxIsDifferent) 
       );
 
       // switch, if we can and the band is different than our current band
       if(canSwitch){
           Frequency frequency = station.frequency_;
-
+	  bool enable_autotx = station.enable_autotx_;
           m_bandHopped = false;
           m_bandHoppedFreq = frequency;
 
@@ -2162,11 +2170,12 @@ void MainWindow::tryBandHop(){
             true,
             this);
 
-          connect(m, &SelfDestructMessageBox::accepted, this, [this, frequency](){
+          connect(m, &SelfDestructMessageBox::accepted, this, [this, frequency,enable_autotx](){
               m_bandHopped = true;
               setRig(frequency);
+	      ui->actionModeAutoreply->setChecked(enable_autotx);
+              ui->hbMacroButton->setChecked(enable_autotx);
           });
-
           m->show();
 
 #if 0

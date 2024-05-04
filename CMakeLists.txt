@@ -158,6 +158,7 @@ set (wsjt_qt_CXXSRCS
   Radio.cpp
   RadioMetaType.cpp
   IARURegions.cpp
+  DaysOfWeek.cpp
   Bands.cpp
   Modes.cpp
   FrequencyList.cpp

@@ -6,6 +6,7 @@
 
 #include "Radio.hpp"
 #include "IARURegions.hpp"
+#include "DaysOfWeek.hpp"
 #include "AudioDevice.hpp"
 #include "Transceiver.hpp"
 
@@ -209,6 +210,7 @@ public:
   Bands * bands ();
   Bands const * bands () const;
   IARURegions::Region region () const;
+  DaysOfWeek::DoW dow () const;
   FrequencyList_v2 * frequencies ();
   FrequencyList_v2 const * frequencies () const;
   StationList * stations ();

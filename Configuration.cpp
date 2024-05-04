@@ -176,6 +176,7 @@
 #include "Transceiver.hpp"
 #include "Bands.hpp"
 #include "IARURegions.hpp"
+#include "DaysOfWeek.hpp"
 #include "Modes.hpp"
 #include "FrequencyList.hpp"
 #include "StationList.hpp"
@@ -277,10 +278,21 @@ public:
     switch_until_.setTimeSpec(Qt::UTC);
     switch_until_.setDisplayFormat("hh:mm");
 
+    day_of_week_.addItem(QString("Daily"));
+    day_of_week_.addItem(QString("Sunday"));
+    day_of_week_.addItem(QString("Monday"));
+    day_of_week_.addItem(QString("Tuesday"));
+    day_of_week_.addItem(QString("Wednesday"));
+    day_of_week_.addItem(QString("Thursday"));
+    day_of_week_.addItem(QString("Friday"));
+    day_of_week_.addItem(QString("Saturday"));
+
     auto form_layout = new QFormLayout ();
     form_layout->addRow (tr ("&Frequency (MHz):"), &freq_);
     form_layout->addRow (tr ("&Switch at (UTC):"), &switch_at_);
     form_layout->addRow (tr ("&Until (UTC):"), &switch_until_);
+    form_layout->addRow (tr ("&Day of Week (Local Time):"), &day_of_week_);
+    form_layout->addRow (tr ("&Enable AutoTX"), &enable_autotx_);
     form_layout->addRow (tr ("&Description:"), &description_);
 
     auto main_layout = new QVBoxLayout (this);
@@ -305,6 +317,8 @@ public:
         freq_.frequency(),
         a,
         b,
+	day_of_week_.currentText(),
+	enable_autotx_.checkState() == Qt::Checked,
         description_.text ()};
   }
 
@@ -322,6 +336,8 @@ private:
   FrequencyLineEdit freq_;
   QTimeEdit switch_at_;
   QTimeEdit switch_until_;
+  QComboBox day_of_week_;
+  QCheckBox enable_autotx_;
   QLineEdit description_;
 };
 
@@ -548,6 +564,8 @@ private:
   Bands bands_;
   IARURegions regions_;
   IARURegions::Region region_;
+  DaysOfWeek dows_;
+  DaysOfWeek::DoW dow_; 
   Modes modes_;
   FrequencyList_v2 frequencies_;
   FrequencyList_v2 next_frequencies_;
@@ -1464,10 +1482,13 @@ Configuration::impl::impl (Configuration * self, QDir const& temp_directory,
   ui_->stations_table_view->setItemDelegate (stations_item_delegate);
   //ui_->stations_table_view->setItemDelegateForColumn (StationList::band_column, new ForeignKeyDelegate {&bands_, &next_stations_, 0, StationList::band_column, this});
 
+  ui_->stations_table_view->setItemDelegateForColumn (StationList::Column::day_of_week_column, new ForeignKeyDelegate {&dows_, 0, this});
   ui_->stations_table_view->resizeColumnToContents (StationList::band_column);
   ui_->stations_table_view->resizeColumnToContents (StationList::frequency_column);
   ui_->stations_table_view->resizeColumnToContents (StationList::switch_at_column);
   ui_->stations_table_view->resizeColumnToContents (StationList::switch_until_column);
+  ui_->stations_table_view->resizeColumnToContents (StationList::day_of_week_column);
+  ui_->stations_table_view->resizeColumnToContents (StationList::enable_autotx_column);
   ui_->stations_table_view->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
   // actions
@@ -3573,6 +3594,8 @@ void Configuration::impl::delete_stations ()
   ui_->stations_table_view->resizeColumnToContents (StationList::frequency_column);
   ui_->stations_table_view->resizeColumnToContents (StationList::switch_at_column);
   ui_->stations_table_view->resizeColumnToContents (StationList::switch_until_column);
+  ui_->stations_table_view->resizeColumnToContents (StationList::day_of_week_column);
+  ui_->stations_table_view->resizeColumnToContents (StationList::enable_autotx_column);
 }
 
 void Configuration::impl::insert_station ()
@@ -3593,6 +3616,8 @@ void Configuration::impl::insert_station ()
       ui_->stations_table_view->resizeColumnToContents (StationList::frequency_column);
       ui_->stations_table_view->resizeColumnToContents (StationList::switch_at_column);
       ui_->stations_table_view->resizeColumnToContents (StationList::switch_until_column);
+      ui_->stations_table_view->resizeColumnToContents (StationList::day_of_week_column);
+      ui_->stations_table_view->resizeColumnToContents (StationList::enable_autotx_column);
     }
 }
 
