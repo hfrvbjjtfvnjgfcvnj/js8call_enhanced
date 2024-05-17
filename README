@@ -1,3 +1,11 @@
+# JS8Call Enhanced
+
+This fork represents a (currently minor) fork of JS8Call focused on adding additional autmoation. 
+
+Features In Testing:
+ * API extenstion for disabling and enabling Auto Reply and Heartbeat Timer
+ * Extended Frequency Hop scheduling to allow automatical toggling of Auto Reply and Heartbeat Timer on a timer (ex: disable Auto Reply during a busy comms window).
+
 # JS8Call
 
 JS8Call is an experiment in combining the robustness of FT8 (a weak-signal mode by K1JT) with a messaging and network protocol layer for weak signal communication. The open source software is designed for connecting amateur radio operators who are operating under weak signal conditions and offers real-time keyboard-to-keyboard messaging, store-and-forward messaging, and automatic station announcements. 
