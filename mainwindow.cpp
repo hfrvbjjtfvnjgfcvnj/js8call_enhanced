@@ -2173,6 +2173,8 @@ void MainWindow::tryBandHop(){
           connect(m, &SelfDestructMessageBox::accepted, this, [this, frequency,enable_autotx](){
               m_bandHopped = true;
               setRig(frequency);
+	      ui->extFreeTextMsgEdit->clear();
+	      clearCallsignSelected();
 	      ui->actionModeAutoreply->setChecked(enable_autotx);
               ui->hbMacroButton->setChecked(enable_autotx);
           });
